@@ -1,0 +1,1317 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science & Engineering Converter</title>
+<style>
+  :root {
+    --primary: #1a1a1a;
+    --secondary: #8b5cf6;
+    --accent: #a855f7;
+    --background: #0a0a1b;
+    --surface: #1e1e2e;
+    --text: #f5f5f5;
+    --text-secondary: #a1a1aa;
+    --grid-gap: 0.75rem;
+    --purple-glow: 0 0 25px rgba(168, 85, 247, 0.4);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--background) 0%, #0f0f23 100%);
+    min-height: 100vh;
+    padding: 1.5rem;
+    color: var(--text);
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text);
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  .header h1 {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+  }
+
+  .header p {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    opacity: 0.8;
+  }
+
+  .converter-section {
+    background: rgba(30, 30, 46, 0.6);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), var(--purple-glow);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    backdrop-filter: blur(20px);
+    margin-bottom: 2rem;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .tab {
+    padding: 1rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%);
+    color: var(--text);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
+
+  .tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+  }
+
+  .tab:hover::before {
+    left: 100%;
+  }
+
+  .tab:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(168, 85, 247, 0.2) 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    border-color: rgba(168, 85, 247, 0.6);
+  }
+
+  .tab.active {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    border-radius: 18px;
+    z-index: -1;
+    filter: blur(12px);
+    opacity: 0.6;
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+
+  .converter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  label {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  input, select {
+    padding: 1rem;
+    background: rgba(45, 45, 65, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    font-size: 1.1rem;
+    color: var(--text);
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3), 0 4px 15px rgba(139, 92, 246, 0.2);
+    transform: translateY(-1px);
+  }
+
+  input[readonly] {
+    background: rgba(45, 45, 65, 0.3);
+    cursor: default;
+  }
+
+  input::placeholder {
+    color: #a1a1aa;
+    opacity: 0.7;
+  }
+
+  .result {
+    margin: 2rem 0;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 1.5rem;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background-color: rgba(139, 92, 246, 0.1);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  }
+
+  .refresh-rates {
+    margin-top: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    body {
+      padding: 1rem;
+    }
+    
+    .container {
+      padding: 0;
+    }
+    
+    .header h1 {
+      font-size: 2.2rem;
+    }
+    
+    .converter-section {
+      margin: 1rem;
+      padding: 1.5rem;
+    }
+    
+    .converter-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    .tabs {
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 0.6rem;
+      padding: 0 0.5rem;
+    }
+    
+    .tab {
+      padding: 0.8rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 14px;
+    }
+  }
+
+  /* Enhanced scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(10, 10, 27, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--accent), var(--secondary));
+  }
+
+  /* Special effects */
+  .converter-section {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .converter-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(139, 92, 246, 0.03) 50%, transparent 70%);
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%); }
+    100% { transform: translateX(100%) translateY(100%); }
+  }
+
+  /* Loading animation for tabs */
+  .tab.loading {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tab.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Enhanced responsive grid for better mobile experience */
+  @media (max-width: 768px) {
+    .converter-section {
+      margin: 1rem;
+      padding: 1.5rem;
+    }
+    
+    .header h1 {
+      font-size: 2.2rem;
+    }
+    
+    .header p {
+      font-size: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <h1>Science & Engineering Converter</h1>
+    <p>Advanced Multi-Domain Scientific Conversion</p>
+  </header>
+
+  <main class="converter-section">
+    <div class="tabs">
+      <button class="tab active" data-type="force">Force</button>
+      <button class="tab" data-type="energy">Energy</button>
+      <button class="tab" data-type="power">Power</button>
+      <button class="tab" data-type="pressure">Pressure</button>
+      <button class="tab" data-type="frequency">Frequency</button>
+      <button class="tab" data-type="velocity">Velocity</button>
+      <button class="tab" data-type="area">Area</button>
+      <button class="tab" data-type="volume">Volume</button>
+      <button class="tab" data-type="currency">Currency</button>
+      <button class="tab" data-type="electrical">Current</button>
+      <button class="tab" data-type="voltage">Voltage</button>
+      <button class="tab" data-type="resistance">Resistance</button>
+      <button class="tab" data-type="capacitance">Capacitance</button>
+      <button class="tab" data-type="inductance">Inductance</button>
+      <button class="tab" data-type="charge">Charge</button>
+      <button class="tab" data-type="magnetic">Magnetic</button>
+      <button class="tab" data-type="flux">Flux</button>
+      <button class="tab" data-type="temperature">Temperature</button>
+      <button class="tab" data-type="heat">Heat</button>
+      <button class="tab" data-type="conductivity">Conductivity</button>
+      <button class="tab" data-type="viscosity">Viscosity</button>
+      <button class="tab" data-type="torque">Torque</button>
+      <button class="tab" data-type="angularVelocity">Angular Velocity</button>
+      <button class="tab" data-type="acceleration">Acceleration</button>
+      <button class="tab" data-type="density">Density</button>
+      <button class="tab" data-type="luminance">Luminance</button>
+      <button class="tab" data-type="radiation">Radiation</button>
+      <button class="tab" data-type="computer">Computer</button>
+      <button class="tab" data-type="biology">Biology</button>
+      <button class="tab" data-type="agriculture">Agriculture</button>
+      <button class="tab" data-type="botany">Botany</button>
+      <button class="tab" data-type="geography">Geography</button>
+      <button class="tab" data-type="architecture">Architecture</button>
+      <button class="tab" data-type="statistics">Statistics</button>
+      <button class="tab" data-type="economics">Economics</button>
+      <button class="tab" data-type="accounting">Accounting</button>
+      <button class="tab" data-type="medicine">Medicine</button>
+      <button class="tab" data-type="mathematics">Mathematics</button>
+    </div>
+
+    <div class="converter-grid">
+      <div class="input-group">
+        <label for="fromValue">From:</label>
+        <input type="number" id="fromValue" placeholder="Enter value" step="any">
+        <select id="fromUnit"></select>
+      </div>
+
+      <div class="input-group">
+        <label for="toValue">To:</label>
+        <input type="number" id="toValue" readonly>
+        <select id="toUnit"></select>
+      </div>
+    </div>
+
+    <div class="result" id="result">
+      Enter a value to see the conversion
+    </div>
+    <div class="refresh-rates" id="refreshRates"></div>
+  </main>
+</div>
+
+<script>
+const conversions = {
+  force: {
+    units: ['Newton (N)', 'Kilonewton (kN)', 'Dyne (dyn)', 'Pound-force (lbf)', 'Kilogram-force (kgf)', 'Poundal (pdl)', 'Kip-force', 'Ton-force (short)', 'Ton-force (long)', 'Gram-force (gf)'],
+    baseUnit: 'Newton (N)',
+    ratios: {
+      'Newton (N)': 1,
+      'Kilonewton (kN)': 0.001,
+      'Dyne (dyn)': 100000,
+      'Pound-force (lbf)': 0.224809,
+      'Kilogram-force (kgf)': 0.101972,
+      'Poundal (pdl)': 7.23301,
+      'Kip-force': 0.000224809,
+      'Ton-force (short)': 0.000112372,
+      'Ton-force (long)': 0.000100361,
+      'Gram-force (gf)': 101.972
+    }
+  },
+  energy: {
+    units: ['Joule (J)', 'Kilojoule (kJ)', 'Megajoule (MJ)', 'Gigajoule (GJ)', 'Calorie (cal)', 'Kilocalorie (kcal)', 'BTU', 'Foot-pound (ft·lbf)', 'Foot-poundal', 'Watt-hour (Wh)', 'Kilowatt-hour (kWh)', 'Electron-volt (eV)', 'Erg', 'Gigawatt-hour (GWh)', 'Megawatt-hour (MWh)', 'Therm (US)'],
+    baseUnit: 'Joule (J)',
+    ratios: {
+      'Joule (J)': 1,
+      'Kilojoule (kJ)': 0.001,
+      'Megajoule (MJ)': 0.000001,
+      'Gigajoule (GJ)': 1e-9,
+      'Calorie (cal)': 0.239006,
+      'Kilocalorie (kcal)': 0.000239006,
+      'BTU': 0.000947817,
+      'Foot-pound (ft·lbf)': 0.737562,
+      'Foot-poundal': 23.7304,
+      'Watt-hour (Wh)': 0.000277778,
+      'Kilowatt-hour (kWh)': 2.77778e-7,
+      'Electron-volt (eV)': 6.242e+18,
+      'Erg': 1e+7,
+      'Gigawatt-hour (GWh)': 2.77778e-13,
+      'Megawatt-hour (MWh)': 2.77778e-10,
+      'Therm (US)': 9.48043e-9
+    }
+  },
+  power: {
+    units: ['Watt (W)', 'Kilowatt (kW)', 'Megawatt (MW)', 'Gigawatt (GW)', 'Horsepower (hp)', 'BTU/hour', 'Foot-pound/minute', 'Foot-pound/second', 'Erg/second', 'Calorie/second', 'Kilocalorie/hour', 'Ton of refrigeration', 'Volt-ampere (VA)', 'Kilovolt-ampere (kVA)'],
+    baseUnit: 'Watt (W)',
+    ratios: {
+      'Watt (W)': 1,
+      'Kilowatt (kW)': 0.001,
+      'Megawatt (MW)': 0.000001,
+      'Gigawatt (GW)': 1e-9,
+      'Horsepower (hp)': 0.00134102,
+      'BTU/hour': 3.41214,
+      'Foot-pound/minute': 44.2537,
+      'Foot-pound/second': 0.737562,
+      'Erg/second': 1e+7,
+      'Calorie/second': 0.239006,
+      'Kilocalorie/hour': 0.859845,
+      'Ton of refrigeration': 0.000284345,
+      'Volt-ampere (VA)': 1,
+      'Kilovolt-ampere (kVA)': 0.001
+    }
+  },
+  pressure: {
+    units: ['Pascal (Pa)', 'Kilopascal (kPa)', 'Megapascal (MPa)', 'Bar', 'PSI', 'PSF', 'Atmosphere (atm)', 'Torr', 'mmHg (0°C)', 'inHg (0°C)', 'Kip/in²', 'Centimeter of water (4°C)', 'Foot of water (4°C)'],
+    baseUnit: 'Pascal (Pa)',
+    ratios: {
+      'Pascal (Pa)': 1,
+      'Kilopascal (kPa)': 0.001,
+      'Megapascal (MPa)': 1e-6,
+      'Bar': 0.00001,
+      'PSI': 0.000145038,
+      'PSF': 0.0208854,
+      'Atmosphere (atm)': 9.86923e-6,
+      'Torr': 0.00750062,
+      'mmHg (0°C)': 0.00750062,
+      'inHg (0°C)': 0.0002953,
+      'Kip/in²': 1.45038e-7,
+      'Centimeter of water (4°C)': 0.0101974,
+      'Foot of water (4°C)': 0.000334552
+    }
+  },
+  frequency: {
+    units: ['Hertz (Hz)', 'Kilohertz (kHz)', 'Megahertz (MHz)', 'Gigahertz (GHz)', 'Terahertz (THz)', 'Revolutions per second (rps)', 'Revolutions per minute (rpm)', 'Radians per second (rad/s)', 'Degrees per second (deg/s)', 'Cycles per minute (cpm)'],
+    baseUnit: 'Hertz (Hz)',
+    ratios: {
+      'Hertz (Hz)': 1,
+      'Kilohertz (kHz)': 0.001,
+      'Megahertz (MHz)': 1e-6,
+      'Gigahertz (GHz)': 1e-9,
+      'Terahertz (THz)': 1e-12,
+      'Revolutions per second (rps)': 1,
+      'Revolutions per minute (rpm)': 0.0166667,
+      'Radians per second (rad/s)': 6.28319,
+      'Degrees per second (deg/s)': 360,
+      'Cycles per minute (cpm)': 60
+    }
+  },
+  velocity: {
+    units: ['Meter/second (m/s)', 'Kilometer/hour (km/h)', 'Mile/hour (mph)', 'Knot (kn)', 'Foot/second (ft/s)', 'Foot/minute (ft/min)', 'Meter/minute (m/min)', 'Centimeter/second (cm/s)', 'Inch/second (in/s)', 'Mach', 'Speed of light', 'Kilometer/second (km/s)'],
+    baseUnit: 'Meter/second (m/s)',
+    ratios: {
+      'Meter/second (m/s)': 1,
+      'Kilometer/hour (km/h)': 3.6,
+      'Mile/hour (mph)': 2.23694,
+      'Knot (kn)': 1.94384,
+      'Foot/second (ft/s)': 3.28084,
+      'Foot/minute (ft/min)': 196.85,
+      'Meter/minute (m/min)': 60,
+      'Centimeter/second (cm/s)': 100,
+      'Inch/second (in/s)': 39.3701,
+      'Mach': 0.00293858,
+      'Speed of light': 3.33564e-9,
+      'Kilometer/second (km/s)': 0.001
+    }
+  },
+  area: {
+    units: ['Square meter (m²)', 'Square kilometer (km²)', 'Hectare (ha)', 'Acre', 'Square foot (ft²)', 'Square inch (in²)', 'Square mile (mi²)', 'Square yard (yd²)', 'Cuerda', 'Square centimeter (cm²)', 'Square millimeter (mm²)', 'Tsubo', 'Section', 'Rood'],
+    baseUnit: 'Square meter (m²)',
+    ratios: {
+      'Square meter (m²)': 1,
+      'Square kilometer (km²)': 1e-6,
+      'Hectare (ha)': 0.0001,
+      'Acre': 0.000247105,
+      'Square foot (ft²)': 10.7639,
+      'Square inch (in²)': 1550,
+      'Square mile (mi²)': 3.86102e-7,
+      'Square yard (yd²)': 1.19599,
+      'Cuerda': 0.000254452,
+      'Square centimeter (cm²)': 10000,
+      'Square millimeter (mm²)': 1000000,
+      'Tsubo': 0.3025,
+      'Section': 3.86102e-7,
+      'Rood': 0.000988421
+    }
+  },
+  volume: {
+    units: ['Cubic meter (m³)', 'Liter (L)', 'Milliliter (mL)', 'Cubic foot (ft³)', 'Cubic inch (in³)', 'Gallon (US)', 'Gallon (UK)', 'Pint (US)', 'Pint (UK)', 'Quart (US)', 'Quart (UK)', 'Tablespoon (US)', 'Teaspoon (US)', 'Fluid ounce (US)', 'Cup (US)', 'Barrel (US)', 'Dram (US)', 'Minim (US)'],
+    baseUnit: 'Cubic meter (m³)',
+    ratios: {
+      'Cubic meter (m³)': 1,
+      'Liter (L)': 1000,
+      'Milliliter (mL)': 1e+6,
+      'Cubic foot (ft³)': 35.3147,
+      'Cubic inch (in³)': 61023.7,
+      'Gallon (US)': 264.172,
+      'Gallon (UK)': 219.969,
+      'Pint (US)': 2113.38,
+      'Pint (UK)': 1759.75,
+      'Quart (US)': 1056.69,
+      'Quart (UK)': 879.877,
+      'Tablespoon (US)': 67628.1,
+      'Teaspoon (US)': 202884,
+      'Fluid ounce (US)': 33814,
+      'Cup (US)': 4226.75,
+      'Barrel (US)': 6.28981,
+      'Dram (US)': 270512,
+      'Minim (US)': 16230707
+    }
+  },
+  currency: {
+    units: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'DKK', 'INR', 'MXN', 'NOK', 'NZD', 'PLN', 'RUB', 'SEK', 'SGD', 'BRL', 'KRW', 'TRY', 'TWD', 'CZK', 'DKK', 'HUF', 'CLP', 'EGP', 'THB', 'IDR', 'PKR', 'PHS', 'KES', 'NGN', 'VND', 'MYR', 'HKD', 'ARS', 'LBP', 'BDT'],
+    baseUnit: 'USD',
+    ratios: {}
+  },
+  electrical: {
+    units: ['Ampere (A)', 'Milliampere (mA)', 'Microampere (μA)', 'Kiloampere (kA)', 'Megaampere (MA)', 'Abampere (abA)', 'Statampere (statA)', 'Coulomb/second (C/s)', 'Picoampere (pA)', 'Nanoampere (nA)', 'Volt/ohm (V/Ω)', 'Siemens-volt (S·V)', 'Watt/Volt (W/V)'],
+    baseUnit: 'Ampere (A)',
+    ratios: {
+      'Ampere (A)': 1,
+      'Milliampere (mA)': 1000,
+      'Microampere (μA)': 1000000,
+      'Kiloampere (kA)': 0.001,
+      'Megaampere (MA)': 1e-6,
+      'Abampere (abA)': 0.1,
+      'Statampere (statA)': 2997924537,
+      'Coulomb/second (C/s)': 1,
+      'Picoampere (pA)': 1e+12,
+      'Nanoampere (nA)': 1000000000,
+      'Volt/ohm (V/Ω)': 1,
+      'Siemens-volt (S·V)': 1,
+      'Watt/Volt (W/V)': 1
+    }
+  },
+  voltage: {
+    units: ['Volt (V)', 'Kilovolt (kV)', 'Millivolt (mV)', 'Microvolt (μV)', 'Megavolt (MV)', 'Abvolt (abV)', 'Statvolt (statV)', 'Nanovolt (nV)', 'Picovolt (pV)', 'Electron volt (eV)'],
+    baseUnit: 'Volt (V)',
+    ratios: {
+      'Volt (V)': 1,
+      'Kilovolt (kV)': 0.001,
+      'Millivolt (mV)': 1000,
+      'Microvolt (μV)': 1000000,
+      'Megavolt (MV)': 1e-6,
+      'Abvolt (abV)': 100000000,
+      'Statvolt (statV)': 0.003335641,
+      'Nanovolt (nV)': 1e+9,
+      'Picovolt (pV)': 1e+12,
+      'Electron volt (eV)': 6.242e+18
+    }
+  },
+  resistance: {
+    units: ['Ohm (Ω)', 'Kiloohm (kΩ)', 'Megaohm (MΩ)', 'Milliohm (mΩ)', 'Microohm (μΩ)', 'Abohm (abΩ)', 'Statohm (statΩ)', 'Gigaohm (GΩ)', 'Volt/Ampere (V/A)'],
+    baseUnit: 'Ohm (Ω)',
+    ratios: {
+      'Ohm (Ω)': 1,
+      'Kiloohm (kΩ)': 0.001,
+      'Megaohm (MΩ)': 1e-6,
+      'Milliohm (mΩ)': 1000,
+      'Microohm (μΩ)': 1000000,
+      'Abohm (abΩ)': 1000000000,
+      'Statohm (statΩ)': 1.11265e-12,
+      'Gigaohm (GΩ)': 1e-9,
+      'Volt/Ampere (V/A)': 1
+    }
+  },
+  capacitance: {
+    units: ['Farad (F)', 'Microfarad (μF)', 'Nanofarad (nF)', 'Picofarad (pF)', 'Kilofarad (kF)', 'Abfarad (abF)', 'Statfarad (statF)', 'Centifarad (cF)', 'Millifarad (mF)'],
+    baseUnit: 'Farad (F)',
+    ratios: {
+      'Farad (F)': 1,
+      'Microfarad (μF)': 1000000,
+      'Nanofarad (nF)': 1e+9,
+      'Picofarad (pF)': 1e+12,
+      'Kilofarad (kF)': 0.001,
+      'Abfarad (abF)': 1e-9,
+      'Statfarad (statF)': 8.98755e+11,
+      'Centifarad (cF)': 100,
+      'Millifarad (mF)': 1000
+    }
+  },
+  inductance: {
+    units: ['Henry (H)', 'Millihenry (mH)', 'Microhenry (μH)', 'Kilohenry (kH)', 'Abhenry (abH)', 'Stathenry (statH)', 'Nanohenry (nH)', 'Picohenry (pH)'],
+    baseUnit: 'Henry (H)',
+    ratios: {
+      'Henry (H)': 1,
+      'Millihenry (mH)': 1000,
+      'Microhenry (μH)': 1000000,
+      'Kilohenry (kH)': 0.001,
+      'Abhenry (abH)': 1000000000,
+      'Stathenry (statH)': 1.11265e-12,
+      'Nanohenry (nH)': 1000000000,
+      'Picohenry (pH)': 1e+12
+    }
+  },
+  charge: {
+    units: ['Coulomb (C)', 'Kilocoulomb (kC)', 'Millicoulomb (mC)', 'Microcoulomb (μC)', 'Nanocoulomb (nC)', 'PicoCoulomb (pC)', 'Elementary charge (e)', 'AbCoulomb (abC)', 'Franklin (Fr)', 'Ampere-hour (Ah)', 'Milliampere-hour (mAh)'],
+    baseUnit: 'Coulomb (C)',
+    ratios: {
+      'Coulomb (C)': 1,
+      'Kilocoulomb (kC)': 0.001,
+      'Millicoulomb (mC)': 1000,
+      'Microcoulomb (μC)': 1000000,
+      'Nanocoulomb (nC)': 1000000000,
+      'PicoCoulomb (pC)': 1e+12,
+      'Elementary charge (e)': 6.242e+18,
+      'AbCoulomb (abC)': 0.1,
+      'Franklin (Fr)': 2997924537,
+      'Ampere-hour (Ah)': 0.000277778,
+      'Milliampere-hour (mAh)': 0.277778
+    }
+  },
+  magnetic: {
+    units: ['Tesla (T)', 'Gauss (G)', 'Microtesla (μT)', 'Milligauss (mG)', 'Gamma (γ)', 'Oersted (Oe)', 'Weber/m² (Wb/m²)', 'Gauss-centimeter (G·cm)', 'Maxwell/centimeter² (Mx/cm²)'],
+    baseUnit: 'Tesla (T)',
+    ratios: {
+      'Tesla (T)': 1,
+      'Gauss (G)': 10000,
+      'Microtesla (μT)': 1000000,
+      'Milligauss (mG)': 10000000,
+      'Gamma (γ)': 1000000,
+      'Oersted (Oe)': 79.5775,
+      'Weber/m² (Wb/m²)': 1,
+      'Gauss-centimeter (G·cm)': 10000,
+      'Maxwell/centimeter² (Mx/cm²)': 10000
+    }
+  },
+  flux: {
+    units: ['Weber (Wb)', 'Maxwell (Mx)', 'Kiloline', 'MegaGauss', 'NanoWeber (nWb)', 'MicroWeber (μWb)', 'MilliWeber (mWb)', 'MilliVolt-second (mV·s)', 'Volt-second (V·s)'],
+    baseUnit: 'Weber (Wb)',
+    ratios: {
+      'Weber (Wb)': 1,
+      'Maxwell (Mx)': 100000000,
+      'Kiloline': 1000000,
+      'MegaGauss': 0.01,
+      'NanoWeber (nWb)': 1000000000,
+      'MicroWeber (μWb)': 1000000,
+      'MilliWeber (mWb)': 1000,
+      'MilliVolt-second (mV·s)': 1000,
+      'Volt-second (V·s)': 1
+    }
+  },
+  temperature: {
+    units: ['Kelvin (K)', 'Celsius (°C)', 'Fahrenheit (°F)', 'Rankine (°R)', 'Delisle (°De)', 'Newton (°N)', 'Réaumur (°Re)', 'Rømer (°Rø)'],
+    baseUnit: 'Kelvin (K)',
+    ratios: {
+      'Kelvin (K)': 1,
+      'Celsius (°C)': -272.15,
+      'Fahrenheit (°F)': -457.87,
+      'Rankine (°R)': 1.8,
+      'Delisle (°De)': -548.4,
+      'Newton (°N)': -89.8095,
+      'Réaumur (°Re)': -218.52,
+      'Rømer (°Rø)': -135.904
+    }
+  },
+  heat: {
+    units: ['Joule (J)', 'Calorie (cal)', 'British Thermal Unit (BTU)', 'Kilocalorie (kcal)', 'Therm (US)', 'Ton of refrigeration', 'Foot-pound (ft·lbf)', 'Kilojoule (kJ)', 'Megajoule (MJ)', 'Watt-hour (Wh)', 'Electron-volt (eV)'],
+    baseUnit: 'Joule (J)',
+    ratios: {
+      'Joule (J)': 1,
+      'Calorie (cal)': 0.239006,
+      'British Thermal Unit (BTU)': 0.000947817,
+      'Kilocalorie (kcal)': 0.000239006,
+      'Therm (US)': 9.48043e-9,
+      'Ton of refrigeration': 7.898e-5,
+      'Foot-pound (ft·lbf)': 0.737562,
+      'Kilojoule (kJ)': 0.001,
+      'Megajoule (MJ)': 0.000001,
+      'Watt-hour (Wh)': 0.000277778,
+      'Electron-volt (eV)': 6.242e+18
+    }
+  },
+  conductivity: {
+    units: ['Siemens/meter (S/m)', 'Ampere/volt/meter (A/V/m)', 'Mho/meter (mho/m)', 'Siemens/centimeter (S/cm)', 'Millisiemens/meter (mS/m)', 'Microsiemens/meter (μS/m)', 'Picosiemens/meter (pS/m)'],
+    baseUnit: 'Siemens/meter (S/m)',
+    ratios: {
+      'Siemens/meter (S/m)': 1,
+      'Ampere/volt/meter (A/V/m)': 1,
+      'Mho/meter (mho/m)': 1,
+      'Siemens/centimeter (S/cm)': 100,
+      'Millisiemens/meter (mS/m)': 1000,
+      'Microsiemens/meter (μS/m)': 1000000,
+      'Picosiemens/meter (pS/m)': 1e+12
+    }
+  },
+  viscosity: {
+    units: ['Pascal-second (Pa·s)', 'Poise (P)', 'Centipoise (cP)', 'Pound-force second/square foot (lbf·s/ft²)', 'Kinematic viscosity (Centistoke)'],
+    baseUnit: 'Pascal-second (Pa·s)',  
+    ratios: {
+      'Pascal-second (Pa·s)': 1,
+      'Poise (P)': 10,
+      'Centipoise (cP)': 1000,
+      'Pound-force second/square foot (lbf·s/ft²)': 0.0208854,
+      'Kinematic viscosity (Centistoke)': 1000000
+    }
+  },
+  torque: {
+    units: ['Newton-meter (N·m)', 'Pound-foot (ft·lbf)', 'Kilogram-force meter (kgf·m)', 'Foot-pound (ft·lbf)', 'Dyne-centimeter (dyn·cm)', 'Kilogram-force per centimeter (kgf·cm)', 'Gram-force meter (gf·m)', 'Ounce-force inch (ozf·in)', 'Pound-force inch (lbf·in)'],
+    baseUnit: 'Newton-meter (N·m)',
+    ratios: {
+      'Newton-meter (N·m)': 1,
+      'Pound-foot (ft·lbf)': 0.737562,
+      'Kilogram-force meter (kgf·m)': 0.101972,
+      'Foot-pound (ft·lbf)': 0.737562,
+      'Dyne-centimeter (dyn·cm)': 10000000,
+      'Kilogram-force per centimeter (kgf·cm)': 10.1972,
+      'Gram-force meter (gf·m)': 101.972,
+      'Ounce-force inch (ozf·in)': 141.612,
+      'Pound-force inch (lbf·in)': 8.85075
+    }
+  },
+  angularVelocity: {
+    units: ['Radian per second (rad/s)', 'Revolutions per minute (rpm)', 'Degrees per second (°/s)', 'Revolutions per hour (rph)', 'Hertz (Hz)', 'Turns per second', 'Degrees per hour', 'Radians per minute'],
+    baseUnit: 'Radian per second (rad/s)',
+    ratios: {
+      'Radian per second (rad/s)': 1,
+      'Revolutions per minute (rpm)': 9.5493,
+      'Degrees per second (°/s)': 57.2958,
+      'Revolutions per hour (rph)': 572.958,
+      'Hertz (Hz)': 1,
+      'Turns per second': 1,
+      'Degrees per hour': 206265,
+      'Radians per minute': 60
+    }
+  },
+  acceleration: {
+    units: ['Meter/second squared (m/s²)', 'Foot/second squared (ft/s²)', 'G-force (g)', 'Gal', 'Milligal', 'Kilogal', 'Standard gravity', 'Mile/hour squared', 'Kilometer/hour squared', 'Feet/minute squared'],
+    baseUnit: 'Meter/second squared (m/s²)',
+    ratios: {
+      'Meter/second squared (m/s²)': 1,
+      'Foot/second squared (ft/s²)': 3.28084,
+      'G-force (g)': 0.1019716213,
+      'Gal': 100,
+      'Milligal': 100000,
+      'Kilogal': 0.1,
+      'Standard gravity': 0.1019716213,
+      'Mile/hour squared': 8052.97,
+      'Kilometer/hour squared': 12960,
+      'Feet/minute squared': 11811
+    }
+  },
+  density: {
+    units: ['Kilogram/meter cubed (kg/m³)', 'Gram/centimeter cubed (g/cm³)', 'Pound/cubic foot (lb/ft³)', 'Pound/cubic inch (lb/in³)', 'Slug/cubic foot (slug/ft³)', 'Gram/liter (g/L)', 'Milligram/liter (mg/L)', 'Ounce/cubic inch (oz/in³)', 'Tonne/meter cubed (t/m³)', 'Gram/milliliter (g/mL)'],
+    baseUnit: 'Kilogram/meter cubed (kg/m³)',
+    ratios: {
+      'Kilogram/meter cubed (kg/m³)': 1,
+      'Gram/centimeter cubed (g/cm³)': 0.001,
+      'Pound/cubic foot (lb/ft³)': 0.062428,
+      'Pound/cubic inch (lb/in³)': 3.61273e-5,
+      'Slug/cubic foot (slug/ft³)': 0.00194032,
+      'Gram/liter (g/L)': 1,
+      'Milligram/liter (mg/L)': 1000,
+      'Ounce/cubic inch (oz/in³)': 0.000578037,
+      'Tonne/meter cubed (t/m³)': 0.001,
+      'Gram/milliliter (g/mL)': 0.001
+    }
+  },
+  luminance: {
+    units: ['Candela/m² (cd/m²)', 'Nit (nt)', 'Lambert', 'Foot-lambert', 'Stilb (sb)', 'Phot (ph)', 'Carcel', 'Kilo-candela per square meter', 'Lux', 'Lumen per square meter', 'Meter-candela'],
+    baseUnit: 'Candela/m² (cd/m²)',
+    ratios: {
+      'Candela/m² (cd/m²)': 1,
+      'Nit (nt)': 1,
+      'Lambert': 0.00031831,
+      'Foot-lambert': 0.291863,
+      'Stilb (sb)': 0.0001,
+      'Phot (ph)': 0.0001,
+      'Carcel': 0.0430116,
+      'Kilo-candela per square meter': 0.001,
+      'Lux': 1,
+      'Lumen per square meter': 1,
+      'Meter-candela': 1
+    }
+  },
+  radiation: {
+    units: ['Gray (Gy)', 'Rad (rd)', 'Sievert (Sv)', 'Rem', 'Becquerel (Bq)', 'Curie (Ci)', 'Rutherford (Rd)', 'Electron-volt per gram (eV/g)', 'Roentgen (R)', 'Joule per kilogram (J/kg)'],
+    baseUnit: 'Gray (Gy)',
+    ratios: {
+      'Gray (Gy)': 1,
+      'Rad (rd)': 100,
+      'Sievert (Sv)': 1,
+      'Rem': 100,
+      'Becquerel (Bq)': 1,
+      'Curie (Ci)': 2.7027e-11,
+      'Rutherford (Rd)': 0.000001,
+      'Electron-volt per gram (eV/g)': 6.242e+18,
+      'Roentgen (R)': 100,
+      'Joule per kilogram (J/kg)': 1
+    }
+  },
+  computer: {
+    units: ['Bit', 'Byte', 'Kilobyte', 'Megabyte', 'Gigabyte', 'Terabyte', 'Petabyte', 'Exabyte', 'Zettabyte', 'Yottabyte', 'Kibibyte', 'Mebibyte', 'Gibibyte', 'Tebibyte', 'Pebibyte', 'Exbibyte', 'Zebibyte', 'Yobibyte', 'Bit/s', 'Byte/s', 'Kilobit/s', 'Megabit/s', 'Gigabit/s', 'Terabit/s', 'Kilobyte/s', 'Megabyte/s', 'Gigabyte/s', 'Terabyte/s', 'RPM', 'IPS', 'FLOPS', 'MegaFLOPS', 'GigaFLOPS', 'TeraFLOPS', 'PetaFLOPS', 'Hz', 'kHz', 'MHz', 'GHz', 'THz', 'PFLOPS', 'EFLOPS', 'ZFLOPS', 'YFLOPS'],
+    baseUnit: 'Byte',
+    ratios: {Bit: 8, Byte: 1, Kilobyte: 1/1024, Megabyte: 1/(Math.pow(1024,2)), Gigabyte: 1/(Math.pow(1024,3)), Terabyte: 1/(Math.pow(1024,4)), Petabyte: 1/(Math.pow(1024,5)), Exabyte: 1/(Math.pow(1024,6)), Zettabyte: 1/(Math.pow(1024,7)), Yottabyte: 1/(Math.pow(1024,8)), Kibibyte: 1024/1000, Mebibyte: 1024/(1000*1000), Gibibyte: 1024/(Math.pow(1000,3)), Tebibyte: 1024/(Math.pow(1000,4)), Pebibyte: 1024/(Math.pow(1000,5)), Exbibyte: 1024/(Math.pow(1000,6)), Zebibyte: 1024/(Math.pow(1000,7)), Yobibyte: 1024/(Math.pow(1000,8)), 'Bit/s': 8, 'Byte/s': 1, 'Kilobit/s': 8000, 'Megabit/s': 8000000, 'Gigabit/s': 8000000000, 'Terabit/s': 8000000000000, 'Kilobyte/s': 8000/1024, 'Megabyte/s': 8000000/(Math.pow(1024,2)), 'Gigabyte/s': 8000000000/(Math.pow(1024,3)), 'Terabyte/s': 8000000000000/(Math.pow(1024,4)), RPM: 1, IPS: 1, FLOPS: 1, MegaFLOPS: 0.000001, GigaFLOPS: 1/1000000000, TeraFLOPS: 1/1000000000000, PetaFLOPS: 1/1000000000000000, Hz: 1, kHz: 0.001, MHz: 0.000001, GHz: 1/1000000000, THz: 1/1000000000000, PFLOPS: 1, EFLOPS: 1, ZFLOPS: 1, YFLOPS: 1}
+  },
+  biology: {
+    units: ['Micrometer', 'Nanometer', 'Millimeter', 'Centimeter', 'Meter', 'Kilometer', 'Angstrom', 'Picometer', 'Micron', 'Mil', 'μm', 'nm', 'mm', 'cm', 'm', 'km', 'Å', 'pm', 'µm', 'Cell count', 'DNA base pair', 'Nucleotide', 'Amino acid', 'Protein size', 'Enzyme activity unit', 'Molarity', 'Molality', 'Molecular weight', 'g/mol', 'Dalton', 'kDa', 'Concentration', 'μg/mL', 'mg/mL', 'ng/mL', 'pg/mL', 'Volume', 'μL', 'mL', 'L', 'μg', 'mg', 'g', 'kg', 'ng', 'pg', 'mol', 'mmol', 'μmol', 'nmol', 'pmol', 'OD600', 'CFU/mL', 'PFU/mL', 'TCID50/mL', 'plaque forming unit', 'colony forming unit', 'absorbance', 'optical density', 'fluorescence unit', 'luminescence unit', 'enzyme unit', 'katal', 'turnover number', 'specific activity', 'Km', 'Vmax', 'ki', 'kcat', 'KD', 'Ka', 'Kd', 'Bmax', 'h', 'min', 's', 'day', 'week', 'month', 'year', 'growth rate', 'doubling time', 'generation time', 'division rate', 'metabolic rate', 'respiration rate', 'temperature', 'pH', 'conductivity', 'osmolality', 'ionic strength', 'salt concentration', 'buffer concentration', 'substrate concentration', 'inhibitor concentration', 'activator concentration', 'cofactor concentration', 'metal ion concentration', 'antibiotic concentration', 'drug concentration', 'antibody concentration', 'receptor concentration', 'ligand concentration', 'binding sites', 'active sites', 'catalytic efficiency', 'reaction velocity', 'rate constant', 'activation energy', 'enthalpy', 'entropy', 'free energy', 'heat capacity', 'binding affinity', 'dissociation constant', 'association constant', 'inhibition constant', 'equilibrium constant', 'redox potential', 'absorbance', 'fluorescence', 'luminescence', 'radioactivity', 'specific radioactivity', 'radioactive decay rate', 'half-life', 'molecular extinction coefficient', 'extinction coefficient', 'protein extinction coefficient', 'nucleic acid extinction coefficient'],
+    baseUnit: 'Micrometer',
+    ratios: {Micrometer: 1, Nanometer: 1000, Millimeter: 0.001, Centimeter: 0.0001, Meter: 0.000001, Kilometer: 1e-9, Angstrom: 10000, Picometer: 1000000, Micron: 1, Mil: 39.3701}
+  },
+  mathematics: {
+    units: [
+      'Radian (rad)', 'Degree (°)', 'Gradian (grad)', 'Turn (rev)', 'Pi radian (π)', 
+      'Arcsecond (″)', 'Arcminute (′)', 'Milliradian (mrad)', 'Microradian (μrad)',
+      'Steradian (sr)', 'Square degree (deg²)', 'Square radian (rad²)',
+      'Meter (m)', 'Kilometer (km)', 'Centimeter (cm)', 'Millimeter (mm)', 'Micrometer (μm)', 
+      'Nanometer (nm)', 'Ångström (Å)', 'Picometer (pm)', 'Femtometer (fm)',
+      'Foot (ft)', 'Inch (in)', 'Yard (yd)', 'Mile (mi)', 'Nautical mile (nmi)',
+      'Square meter (m²)', 'Square kilometer (km²)', 'Hectare (ha)', 'Acre (ac)',
+      'Square foot (ft²)', 'Square inch (in²)', 'Square mile (mi²)',
+      'Cubic meter (m³)', 'Liter (L)', 'Milliliter (mL)', 'Cubic foot (ft³)', 'Gallon (gal)',
+      'Newton (N)', 'Kilonewton (kN)', 'Dyne (dyn)', 'Pound-force (lbf)', 'Kilogram-force (kgf)',
+      'Pascal (Pa)', 'Kilopascal (kPa)', 'Megapascal (MPa)', 'Bar (bar)', 'Atmosphere (atm)',
+      'Pound per square inch (psi)', 'Torr (Torr)', 'Millimeter of mercury (mmHg)',
+      'Joule (J)', 'Kilojoule (kJ)', 'Megajoule (MJ)', 'Calorie (cal)', 'Kilocalorie (kcal)',
+      'British thermal unit (BTU)', 'Foot-pound (ft·lbf)', 'Electronvolt (eV)',
+      'Watt (W)', 'Kilowatt (kW)', 'Megawatt (MW)', 'Horsepower (hp)', 'BTU/hour',
+      'Hertz (Hz)', 'Kilohertz (kHz)', 'Megahertz (MHz)', 'Gigahertz (GHz)',
+      'Radian per second (rad/s)', 'Revolutions per minute (rpm)', 'Degrees per second (°/s)',
+      'Meter per second (m/s)', 'Kilometer per hour (km/h)', 'Mile per hour (mph)', 'Knot (kn)',
+      'Meter per second squared (m/s²)', 'Standard gravity (g)', 'Gal (Gal)',
+      'Kilogram (kg)', 'Gram (g)', 'Milligram (mg)', 'Tonne (t)', 'Pound (lb)', 'Ounce (oz)',
+      'Mole (mol)', 'Kilomole (kmol)', 'Millimole (mmol)', 'Micromole (μmol)',
+      'Kelvin (K)', 'Celsius (°C)', 'Fahrenheit (°F)', 'Rankine (°R)',
+      'Pi (π)', 'Euler number (e)', 'Golden ratio (φ)', 'Square root of 2 (√2)', 'Natural logarithm base',
+      'Imaginary unit (i)', 'Infinity (∞)', 'NaN', 'Epsilon (ε)', 'Delta (δ)',
+      'Summation (∑)', 'Product (∏)', 'Integral (∫)', 'Derivative (d/dx)', 'Partial derivative (∂/∂x)',
+      'Gradient (∇)', 'Laplacian (∇²)', 'Curl (∇×)', 'Divergence (∇·)',
+      'Matrix determinant (det)', 'Matrix trace (tr)', 'Norm (||·||)', 'Dot product (·)', 'Cross product (×)',
+      'Tensor product (⊗)', 'Kronecker product (⊙)', 'Hadamard product (∘)',
+      'Permutation (n!)', 'Combination (C(n,k))', 'Binomial coefficient (ⁿCₖ)', 'Factorial (!)',
+      'Gamma function (Γ)', 'Beta function (B)', 'Error function (erf)', 'Zeta function (ζ)',
+      'Bessel function (J)', 'Legendre polynomial (P)', 'Chebyshev polynomial (T)', 'Hermite polynomial (H)',
+      'Fourier transform (ℱ)', 'Laplace transform (ℒ)', 'Z-transform (𝒵)', 'Hilbert transform (ℋ)',
+      'Standard deviation (σ)', 'Variance (σ²)', 'Mean (μ)', 'Median', 'Mode',
+      'Correlation coefficient (ρ)', 'Covariance (Cov)', 'Regression coefficient (β)', 'R-squared (R²)',
+      'Complex conjugate (z̄)', 'Real part (Re)', 'Imaginary part (Im)', 'Modulus (|z|)', 'Argument (arg)',
+      'Hyperbolic sine (sinh)', 'Hyperbolic cosine (cosh)', 'Hyperbolic tangent (tanh)',
+      'Sine (sin)', 'Cosine (cos)', 'Tangent (tan)', 'Cotangent (cot)', 'Secant (sec)', 'Cosecant (csc)',
+      'Arcsine (arcsin)', 'Arccosine (arccos)', 'Arctangent (arctan)', 'Arccotangent (arccot)',
+      'Exponential (exp)', 'Natural logarithm (ln)', 'Common logarithm (log)', 'Binary logarithm (log₂)',
+      'Hyperbolic logarithm (logₕ)', 'Square root (√)', 'Cube root (∛)', 'Nth root (ⁿ√)',
+      'Absolute value (|x|)', 'Sign function (sgn)', 'Floor function (⌊x⌋)', 'Ceiling function (⌈x⌉)',
+      'Rounding function (round)', 'Truncation function (trunc)', 'Fractional part (frac)',
+      'Modulo operation (mod)', 'Greatest common divisor (gcd)', 'Least common multiple (lcm)',
+      'Prime counting function (π(x))', 'Euler totient function (φ)', 'Möbius function (μ)', 'Riemann xi function (ξ)'
+    ],
+    baseUnit: 'Radian (rad)',
+    ratios: {
+      'Radian (rad)': 1,
+      'Degree (°)': 57.2958,
+      'Gradian (grad)': 63.662,
+      'Turn (rev)': 0.159155,
+      'Pi radian (π)': 0.31831,
+      'Arcsecond (″)': 206265,
+      'Arcminute (′)': 3437.75,
+      'Milliradian (mrad)': 1000,
+      'Microradian (μrad)': 1000000,
+      'Steradian (sr)': 1,
+      'Square degree (deg²)': 3282.81,
+      'Square radian (rad²)': 1,
+      'Meter (m)': 1,
+      'Kilometer (km)': 0.001,
+      'Centimeter (cm)': 100,
+      'Millimeter (mm)': 1000,
+      'Micrometer (μm)': 1000000,
+      'Nanometer (nm)': 1e+9,
+      'Ångström (Å)': 1e+10,
+      'Picometer (pm)': 1e+12,
+      'Femtometer (fm)': 1e+15,
+      'Foot (ft)': 3.28084,
+      'Inch (in)': 39.3701,
+      'Yard (yd)': 1.09361,
+      'Mile (mi)': 0.000621371,
+      'Nautical mile (nmi)': 0.000539957,
+      'Square meter (m²)': 1,
+      'Square kilometer (km²)': 1e-6,
+      'Hectare (ha)': 0.0001,
+      'Acre (ac)': 0.000247105,
+      'Square foot (ft²)': 10.7639,
+      'Square inch (in²)': 1550,
+      'Square mile (mi²)': 3.86102e-7,
+      'Cubic meter (m³)': 1,
+      'Liter (L)': 1000,
+      'Milliliter (mL)': 1e+6,
+      'Cubic foot (ft³)': 35.3147,
+      'Gallon (gal)': 264.172,
+      'Newton (N)': 1,
+      'Kilonewton (kN)': 0.001,
+      'Dyne (dyn)': 100000,
+      'Pound-force (lbf)': 0.224809,
+      'Kilogram-force (kgf)': 0.101972,
+      'Pascal (Pa)': 1,
+      'Kilopascal (kPa)': 0.001,
+      'Megapascal (MPa)': 1e-6,
+      'Bar (bar)': 0.00001,
+      'Atmosphere (atm)': 9.86923e-6,
+      'Pound per square inch (psi)': 0.000145038,
+      'Torr (Torr)': 0.00750062,
+      'Millimeter of mercury (mmHg)': 0.00750062,
+      'Joule (J)': 1,
+      'Kilojoule (kJ)': 0.001,
+      'Megajoule (MJ)': 0.000001,
+      'Calorie (cal)': 0.239006,
+      'Kilocalorie (kcal)': 0.000239006,
+      'British thermal unit (BTU)': 0.000947817,
+      'Foot-pound (ft·lbf)': 0.737562,
+      'Electronvolt (eV)': 6.242e+18,
+      'Watt (W)': 1,
+      'Kilowatt (kW)': 0.001,
+      'Megawatt (MW)': 0.000001,
+      'Horsepower (hp)': 0.00134102,
+      'BTU/hour': 3.41214,
+      'Hertz (Hz)': 1,
+      'Kilohertz (kHz)': 0.001,
+      'Megahertz (MHz)': 0.000001,
+      'Gigahertz (GHz)': 1e-9,
+      'Radian per second (rad/s)': 1,
+      'Revolutions per minute (rpm)': 9.5493,
+      'Degrees per second (°/s)': 57.2958,
+      'Meter per second (m/s)': 1,
+      'Kilometer per hour (km/h)': 3.6,
+      'Mile per hour (mph)': 2.23694,
+      'Knot (kn)': 1.94384,
+      'Meter per second squared (m/s²)': 1,
+      'Standard gravity (g)': 0.101972,
+      'Gal (Gal)': 100,
+      'Kilogram (kg)': 1,
+      'Gram (g)': 1000,
+      'Milligram (mg)': 1000000,
+      'Tonne (t)': 0.001,
+      'Pound (lb)': 2.20462,
+      'Ounce (oz)': 35.274,
+      'Mole (mol)': 1,
+      'Kilomole (kmol)': 0.001,
+      'Millimole (mmol)': 1000,
+      'Micromole (μmol)': 1000000,
+      'Kelvin (K)': 1,
+      'Celsius (°C)': -272.15,
+      'Fahrenheit (°F)': -457.87,
+      'Rankine (°R)': 1.8,
+      'Pi (π)': 3.14159,
+      'Euler number (e)': 2.71828,
+      'Golden ratio (φ)': 1.61803,
+      'Square root of 2 (√2)': 1.41421,
+      'Natural logarithm base': 2.71828,
+      'Imaginary unit (i)': 1,
+      'Infinity (∞)': 1,
+      'NaN': 1,
+      'Epsilon (ε)': 1,
+      'Delta (δ)': 1,
+      'Summation (∑)': 1,
+      'Product (∏)': 1,
+      'Integral (∫)': 1,
+      'Derivative (d/dx)': 1,
+      'Partial derivative (∂/∂x)': 1,
+      'Gradient (∇)': 1,
+      'Laplacian (∇²)': 1,
+      'Curl (∇×)': 1,
+      'Divergence (∇·)': 1,
+      'Matrix determinant (det)': 1,
+      'Matrix trace (tr)': 1,
+      'Norm (||·||)': 1,
+      'Dot product (·)': 1,
+      'Cross product (×)': 1,
+      'Tensor product (⊗)': 1,
+      'Kronecker product (⊙)': 1,
+      'Hadamard product (∘)': 1,
+      'Permutation (n!)': 1,
+      'Combination (C(n,k))': 1,
+      'Binomial coefficient (ⁿCₖ)': 1,
+      'Factorial (!)': 1,
+      'Gamma function (Γ)': 1,
+      'Beta function (B)': 1,
+      'Error function (erf)': 1,
+      'Zeta function (ζ)': 1,
+      'Bessel function (J)': 1,
+      'Legendre polynomial (P)': 1,
+      'Chebyshev polynomial (T)': 1,
+      'Hermite polynomial (H)': 1,
+      'Fourier transform (ℱ)': 1,
+      'Laplace transform (ℒ)': 1,
+      'Z-transform (𝒵)': 1,
+      'Hilbert transform (ℋ)': 1,
+      'Standard deviation (σ)': 1,
+      'Variance (σ²)': 1,
+      'Mean (μ)': 1,
+      'Median': 1,
+      'Mode': 1,
+      'Correlation coefficient (ρ)': 1,
+      'Covariance (Cov)': 1,
+      'Regression coefficient (β)': 1,
+      'R-squared (R²)': 1,
+      'Complex conjugate (z̄)': 1,
+      'Real part (Re)': 1,
+      'Imaginary part (Im)': 1,
+      'Modulus (|z|)': 1,
+      'Argument (arg)': 1,
+      'Hyperbolic sine (sinh)': 1,
+      'Hyperbolic cosine (cosh)': 1,
+      'Hyperbolic tangent (tanh)': 1,
+      'Sine (sin)': 1,
+      'Cosine (cos)': 1,
+      'Tangent (tan)': 1,
+      'Cotangent (cot)': 1,
+      'Secant (sec)': 1,
+      'Cosecant (csc)': 1,
+      'Arcsine (arcsin)': 1,
+      'Arccosine (arccos)': 1,
+      'Arctangent (arctan)': 1,
+      'Arccotangent (arccot)': 1,
+      'Exponential (exp)': 1,
+      'Natural logarithm (ln)': 1,
+      'Common logarithm (log)': 1,
+      'Binary logarithm (log₂)': 1,
+      'Hyperbolic logarithm (logₕ)': 1,
+      'Square root (√)': 1,
+      'Cube root (∛)': 1,
+      'Nth root (ⁿ√)': 1,
+      'Absolute value (|x|)': 1,
+      'Sign function (sgn)': 1,
+      'Floor function (⌊x⌋)': 1,
+      'Ceiling function (⌈x⌉)': 1,
+      'Rounding function (round)': 1,
+      'Truncation function (trunc)': 1,
+      'Fractional part (frac)': 1,
+      'Modulo operation (mod)': 1,
+      'Greatest common divisor (gcd)': 1,
+      'Least common multiple (lcm)': 1,
+      'Prime counting function (π(x))': 1,
+      'Euler totient function (φ)': 1,
+      'Möbius function (μ)': 1,
+      'Riemann xi function (ξ)': 1
+    }
+  },
+  botany: {
+    units: ['Meter (m)', 'Centimeter (cm)', 'Millimeter (mm)', 'Micrometer (μm)', 'Nanometer (nm)', 'Kilometer (km)', 'Foot (ft)', 'Inch (in)', 'Yard (yd)', 'Mile (mi)', 'Nautical mile (nmi)', 'Fathom (fath)', 'Furlong (fur)', 'Rod (rod)', 'Chain (ch)', 'Link (lnk)', 'Rope (rope)', 'Cable (cbl)', 'Hand (hnd)', 'Span (spn)', 'Ell (ell)', 'Barleycorn (brc)', 'Digit (dig)', 'League (lea)', 'Geographical mile (geo)', 'Statute mile (st)', 'Light year (ly)', 'Astronomical unit (au)', 'Parsec (pc)', 'Kiloparsec (kpc)', 'Megaparsec (Mpc)', 'Gigaparsec (Gpc)', 'Hectometer (hm)', 'Decameter (dam)', 'Decimeter (dm)', 'Square meter (m²)', 'Square kilometer (km²)', 'Hectare (ha)', 'Acre (ac)', 'Square foot (ft²)', 'Square inch (in²)', 'Square mile (mi²)', 'Cubic meter (m³)', 'Cubic foot (ft³)', 'Cubic inch (in³)', 'Liter (L)', 'Gallon (gal)', 'Newton (N)', 'Kilonewton (kN)', 'Dyne (dyn)', 'Pound-force (lbf)', 'Kilogram-force (kgf)', 'Pascal (Pa)', 'Kilopascal (kPa)', 'Megapascal (MPa)', 'Bar (bar)', 'Atmosphere (atm)', 'Pound per square inch (psi)', 'Torr (Torr)', 'Millimeter of mercury (mmHg)', 'Joule (J)', 'Kilojoule (kJ)', 'Megajoule (MJ)', 'Calorie (cal)', 'Kilocalorie (kcal)', 'British thermal unit (BTU)', 'Foot-pound (ft·lbf)', 'Electronvolt (eV)', 'Watt (W)', 'Kilowatt (kW)', 'Megawatt (MW)', 'Horsepower (hp)', 'BTU/hour', 'Hertz (Hz)', 'Kilohertz (kHz)', 'Megahertz (MHz)', 'Gigahertz (GHz)', 'Radian per second (rad/s)', 'Revolutions per minute (rpm)', 'Degrees per second (°/s)', 'Meter per second (m/s)', 'Kilometer per hour (km/h)', 'Mile per hour (mph)', 'Knot (kn)', 'Meter per second squared (m/s²)', 'Standard gravity (g)', 'Gal (Gal)', 'Kilogram (kg)', 'Gram (g)', 'Milligram (mg)', 'Tonne (t)', 'Pound (lb)', 'Ounce (oz)', 'Mole (mol)', 'Kilomole (kmol)', 'Millimole (mmol)', 'Micromole (μmol)', 'Kelvin (K)', 'Celsius (°C)', 'Fahrenheit (°F)', 'Rankine (°R)', 'Pi (π)', 'Euler number (e)', 'Golden ratio (φ)', 'Square root of 2 (√2)', 'Natural logarithm base', 'Imaginary unit (i)', 'Infinity (∞)', 'NaN', 'Epsilon (ε)', 'Delta (δ)', 'Summation (∑)', 'Product (∏)', 'Integral (∫)', 'Derivative (d/dx)', 'Partial derivative (∂/∂x)', 'Gradient (∇)', 'Laplacian (∇²)', 'Curl (∇×)', 'Divergence (∇·)', 'Matrix determinant (det)', 'Matrix trace (tr)', 'Norm (||·||)', 'Dot product (·)', 'Cross product (×)', 'Tensor product (⊗)', 'Kronecker product (⊙)', 'Hadamard product (∘)', 'Permutation (n!)', 'Combination (C(n,k))', 'Binomial coefficient (ⁿCₖ)', 'Factorial (!)', 'Gamma function (Γ)', 'Beta function (B)', 'Error function (erf)', 'Zeta function (ζ)', 'Bessel function (J)', 'Legendre polynomial (P)', 'Chebyshev polynomial (T)', 'Hermite polynomial (H)', 'Fourier transform (ℱ)', 'Laplace transform (ℒ)', 'Z-transform (𝒵)', 'Hilbert transform (ℋ)', 'Standard deviation (σ)', 'Variance (σ²)', 'Mean (μ)', 'Median', 'Mode', 'Correlation coefficient (ρ)', 'Covariance (Cov)', 'Regression coefficient (β)', 'R-squared (R²)', 'Complex conjugate (z̄)', 'Real part (Re)', 'Imaginary part (Im)', 'Modulus (|z|)', 'Argument (arg)', 'Hyperbolic sine (sinh)', 'Hyperbolic cosine (cosh)', 'Hyperbolic tangent (tanh)', 'Sine (sin)', 'Cosine (cos)', 'Tangent (tan)', 'Cotangent (cot)', 'Secant (sec)', 'Cosecant (csc)', 'Arcsine (arcsin)', 'Arccosine (arccos)', 'Arctangent (arctan)', 'Arccotangent (arccot)', 'Exponential (exp)', 'Natural logarithm (ln)', 'Common logarithm (log)', 'Binary logarithm (log₂)', 'Hyperbolic logarithm (logₕ)', 'Square root (√)', 'Cube root (∛)', 'Nth root (ⁿ√)', 'Absolute value (|x|)', 'Sign function (sgn)', 'Floor function (⌊x⌋)', 'Ceiling function (⌈x⌉)', 'Rounding function (round)', 'Truncation function (trunc)', 'Fractional part (frac)', 'Modulo operation (mod)', 'Greatest common divisor (gcd)', 'Least common multiple (lcm)', 'Prime counting function (π(x))', 'Euler totient function (φ)', 'Möbius function (μ)', 'Riemann xi function (ξ)', 'Plant height', 'Stem diameter', 'Leaf length', 'Leaf width', 'Leaf area', 'Root length', 'Root surface area', 'Dry weight', 'Fresh weight', 'Biomass', 'Yield', 'Weight (g)', 'Weight (kg)', 'Volume (mL)', 'Volume (L)', 'Area (cm²)', 'Area (m²)', 'Length (cm)', 'Diameter (mm)', 'Circumference (cm)', 'Water content', 'Moisture content', 'Chlorophyll content', 'Nutrient content', 'Protein content', 'Carbohydrate content', 'Fat content', 'Fiber content', 'Ash content', 'Protein content', 'Oil content', 'Fiber content', 'Starch content', 'Sugar content', 'Fat content', 'Energy content', 'Nutrient content', 'Fertilizer application rate', 'Pesticide application rate', 'Herbicide application rate', 'Fungicide application rate', 'Insecticide application rate', 'Seeding rate', 'Planting rate', 'Sowing rate', 'Spacing', 'Row spacing', 'Plant spacing', 'Density', 'Plant density', 'Seeding density', 'Depth', 'Planting depth', 'Sowing depth', 'Germination rate', 'Survival rate', 'Establishment rate', 'Emergence rate', 'Vigor index', 'Stress index', 'Drought index', 'Salinity index', 'pH', 'EC', 'Temperature', 'Humidity', 'Light intensity', 'Photo period', 'CO2 concentration', 'Water availability', 'Irrigation rate', 'Water use efficiency', 'Water retention', 'Drainage rate', 'Percolation rate', 'Evaporation rate', 'Transpiration rate', 'Growth rate', 'Relative growth rate', 'Absolute growth rate', 'Crop coefficient', 'Reference evapotranspiration', 'Actual evapotranspiration', 'Potential evapotranspiration']
+  },
+  statistics: {
+    units: ['Mean', 'Median', 'Mode', 'Standard deviation', 'Variance', 'Range', 'Min', 'Max', 'Sum', 'Count', 'Frequency', 'Percentile', 'Quartile', 'Interquartile range', 'Skewness', 'Kurtosis', 'Coefficient of variation', 'Standard error', 'Confidence interval', 'Z-score', 'T-score', 'P-value', 'Significance level', 'Type I error', 'Type II error', 'Power of test', 'Effect size', 'Cohen d', 'Pearson correlation', 'Spearman correlation', 'Kendall correlation', 'Chi-square', 'F-statistic', 'T-statistic', 'Z-statistic', 'R-squared', 'Adjusted R-squared', 'RMS error', 'Mean absolute error', 'Mean squared error', 'Root mean squared', 'Mean absolute percentage error', 'Symmetric mean absolute percentage error', 'Bias', 'Precision', 'Accuracy', 'Recall', 'F1 score', 'Sensitivity', 'Specificity', 'True positive', 'True negative', 'False positive', 'False negative', 'ROC curve', 'AUC', 'Precision-recall curve', 'Confusion matrix', 'Classification report', 'Residual', 'Residual sum of squares', 'Total sum of squares', 'Explained sum of squares', 'Degrees of freedom', 'N', 'df', 'k', 'α', 'β', 'γ', 'ρ', 'σ²', 'μ', 'σ', 'λ', 'θ', 'φ', 'ψ', 'ω', 'π', 'e', 'ln', 'log', 'exp', 'sqrt', 'abs', 'tan', 'sin', 'cos', 'arctan', 'arcsin', 'arccos', 'sum', 'product', 'max', 'min', 'mean', 'median', 'mode', 'quantile', 'decile', 'quartile', 'percentile', 'skew', 'kurtosis', 'norm', 'poisson', 'exponential', 'gamma', 'beta', 'uniform', 'binomial', 'geometric', 'hypergeometric', 'f', 't', 'chi-squared', 'normal', 'lognormal', 'weibull', 'pareto', 'bernoulli', 'multinomial', 'multivariate', 'covariance', 'correlation', 'regression', 'linear', 'quadratic', 'polynomial', 'exponential', 'logarithmic', 'power', 'sigmoidal', 'logistic', 'probit', 'cumulative'],
+    baseUnit: 'Mean',
+    ratios: {Mean: 1, Median: 1, Mode: 1, Standard: 1, Variance: 1, Range: 1, Min: 1, Max: 1, Sum: 1, Count: 1, Frequency: 1, Percentile: 1, Quartile: 1, Skewness: 1, Kurtosis: 1, Zscore: 1, Tscore: 1, Pvalue: 1, Rsquared: 1, Fstatistic: 1, Tstatistic: 1, Chi: 1, RMS: 1, AUC: 1}
+  },
+  agriculture: {
+    units: ['Hectare', 'Acre', 'Square meter', 'Are', 'Rood', 'Cuerda', 'Tsubo', 'Square foot', 'Square inch', 'Square yard', 'Square mile', 'Bale', 'Bushel', 'Peck', 'Gallon', 'Liter', 'Cubic meter', 'Cubic foot', 'Cubic inch', 'Ton', 'Tonne', 'Metric ton', 'US ton', 'Imperial ton', 'Pound', 'Ounce', 'Gram', 'Kilogram', 'Quintal', 'Yield per hectare', 'Yield per acre', 'Bushel per acre', 'Bushel per hectare', 'Tonne per hectare', 'Tons per acre', 'Tons per hectare', 'Kg per tree', 'Kg per plant', 'Kg per vine', 'Kg per bush', 'Kg per stem', 'Kg per cutting', 'Kg per seedling', 'Kg per cutting', 'Bale', 'Bag', 'Sack', 'Bundle', 'Sheaf', 'Stack', 'Heap', 'Load', 'Cartload', 'Truckload', 'Container', 'Palette', 'Crate', 'Box', 'Basket', 'Barrel', 'Drum', 'Bin', 'Silo', 'Storage capacity', 'Capacity utilization', 'Fill rate', 'Loading rate', 'Unloading rate', 'Throughput', 'Productivity', 'Efficiency', 'Waste index', 'Loss index', 'Moisture content', 'Dry matter', 'Wet weight', 'Dry weight', 'Water content', 'Ash content', 'Protein content', 'Oil content', 'Fiber content', 'Starch content', 'Sugar content', 'Fat content', 'Energy content', 'Nutrient content', 'Fertilizer application rate', 'Pesticide application rate', 'Herbicide application rate', 'Fungicide application rate', 'Insecticide application rate', 'Seeding rate', 'Planting rate', 'Sowing rate', 'Spacing', 'Row spacing', 'Plant spacing', 'Density', 'Plant density', 'Seeding density', 'Depth', 'Planting depth', 'Sowing depth', 'Germination rate', 'Survival rate', 'Establishment rate', 'Emergence rate', 'Vigor index', 'Stress index', 'Drought index', 'Salinity index', 'pH', 'EC', 'Temperature', 'Humidity', 'Light intensity', 'Photo period', 'CO2 concentration', 'Water availability', 'Irrigation rate', 'Water use efficiency', 'Water retention', 'Drainage rate', 'Percolation rate', 'Evaporation rate', 'Transpiration rate', 'Growth rate', 'Relative growth rate', 'Absolute growth rate', 'Crop coefficient', 'Reference evapotranspiration', 'Actual evapotranspiration', 'Potential evapotranspiration'],
+    baseUnit: 'Hectare',
+    ratios: {'Hectare': 1, 'Acre': 0.404685, 'Square meter': 10000, 'Are': 100, 'Rood': 1011.71, 'Cuerda': 0.004, 'Tsubo': 3025, 'Square foot': 107639, 'Square inch': 15500000, 'Square mile': 0.00386102, 'Square yard': 11959.9, 'Bale': 1, 'Bushel': 1, 'Peck': 1, 'Gallon': 1, 'Liter': 1, 'Cubic meter': 1, 'Cubic foot': 1, 'Cubic inch': 1, Ton: 1, Tonne: 1, 'Metric ton': 1, Pound: 1, Ounce: 1, Gram: 1, Kilogram: 1}
+  },
+  economics: {
+    units: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'RUB', 'INR', 'BRL', 'MXN', 'ZAR', 'KRW', 'SGD', 'HKD', 'NZD', 'THB', 'IDR', 'PHP', 'ARS', 'CLP', 'PEN', 'UAH', 'RON', 'BGN', 'HRK', 'ISK', 'CNH', 'TRY', 'SAR', 'AED', 'QAR', 'KWD', 'BHD', 'OMR', 'JOD', 'ILS', 'Egyptian Pound', 'Nigerian Naira', 'Kenyan Shilling', 'South African Rand', 'Ghanaian Cedi', 'Tunisian Dinar', 'Moroccan Dirham', 'Algerian Dinar', 'Libyan Dinar', 'Sudanese Pound', 'Lebanese Pound', 'Brazilian Real', 'Norwegian Krone', 'Swedish Krona', 'Danish Krone', 'Pound', 'Euro', 'Franc', 'Yen', 'Dollar', 'Rupee', 'Yuan', 'Won', 'Baht', 'Ringgit', 'Rupiah', 'Peso', 'Real', 'Krone', 'Forint', 'Zloty', 'Leu', 'Dinar', 'Rial', 'Shekel', 'Bitcoin', 'Ethereum', 'Litecoin', 'Ripple', 'Cardano', 'Polkadot', 'Dogecoin', 'Stablecoin', 'Central Bank Digital Currency', 'CBDC', 'USD', 'EUR', 'GBP', 'JPY', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'RUB', 'INR', 'BRL', 'MXN', 'ZAR', 'KRW', 'SGD', 'HKD', 'NZD', 'THB', 'IDR', 'PHP', 'ARS', 'CLP', 'TRY', 'PEN', 'UAH', 'RON', 'BGN', 'HRK', 'ISK', 'USD', 'EUR', 'Exchange Rate', 'Stock Price', 'Share Price', 'Market Cap', 'Revenue', 'Profit', 'Net Income', 'Gross Margin', 'Net Margin', 'Operating Margin', 'EBITDA', 'EBIT', 'EPS', 'PE Ratio', 'Price to Book', 'ROE', 'ROA', 'ROI', 'ROIC', 'Debt to Equity', 'Current Ratio', 'Quick Ratio', 'Inventory Turnover', 'Asset Turnover', 'Revenue per Share', 'Cash Flow', 'Free Cash Flow', 'Operating Cash Flow', 'Investing Cash Flow', 'Financing Cash Flow', 'Book Value', 'Tangible Book Value', 'Total Assets', 'Total Liabilities', 'Shareholders Equity', 'Common Equity', 'Retained Earnings', 'Paid-in Capital', 'APIC', 'Goodwill', 'Intangible Assets', 'PP&E', 'Depreciation', 'Amortization', 'CAPEX', 'CapEx', 'OPEX', 'OpEx', 'SG&A', 'R&D', 'Marketing Costs', 'COGS', 'Cost of Goods Sold', 'Gross Profit', 'Operating Profit', 'Profit Margin', 'Net Margin', 'Return on Investment', 'Interest', 'Dividend', 'Dividend Yield', 'Dividend Payout Ratio', 'Market Cap', 'Enterprise Value', 'EV/EBITDA', 'PS Ratio', 'PB Ratio', 'PEG Ratio', 'Price to Earnings', 'Price to Sales', 'Price to Book', 'EV/Revenue', 'EV/EBITDA', 'Acid Test Ratio', 'Cash Ratio', 'Debt Ratio', 'Equity Ratio', 'Leverage Ratio', 'Coverage Ratio', 'Activity Ratio', 'Efficiency Ratio', 'Profitability Ratio', 'Valuation Ratio', 'Liquidity', 'Solvency', 'Efficiency', 'Profitability', 'Valuation', 'Metrics', 'KPIs', 'OKRs', 'SLA', 'SLO', 'SLI', 'ROI', 'ROIC', 'WACC', 'Beta', 'Alpha', 'Sharpe', 'Sortino', 'Tracking Error', 'Information Ratio', 'Maximum Drawdown', 'Volatility', 'Standard Deviation', 'VaR', 'CVaR', 'Expected Shortfall', 'Monte Carlo Simulation', 'Black-Scholes', 'Option Pricing', 'Implied Volatility', 'Historical Volatility', 'GARCH', 'ARIMA', 'Markowitz', 'CAPM', 'APT', 'Fama-French', 'Multi-Factor Model', 'Efficient Frontier', 'CAPM', 'Dividend Discount Model', 'DCF', 'Discounted Cash Flow', 'Free Cash Flow Yield', 'FCF Yield', 'EV/FCF', 'EV/EBIT', 'EV/EBITDA', 'PEG', 'EV/Sales', 'EV/Revenue', 'Price to Sales', 'Cost of Capital', 'Opportunity Cost', 'Time Value', 'Money', 'Future Value', 'Present Value', 'Annuity', 'Perpetuity', 'NPV', 'IRR', 'Payback Period', 'Profitability Index', 'Hurdle Rate', 'Cost of Goods Sold', 'Gross Margin', 'Operating Margin', 'Net Margin', 'Return on Assets', 'Return on Equity', 'Return on Capital Employed', 'DuPont Analysis', 'ROCE', 'ROIC', 'RONA', 'ROTA', 'ROE', 'ROI', 'EVA', 'Economic Value Added', 'MVA', 'Market Value Added', 'NOPAT', 'Net Operating Profit After Tax', 'FCFE', 'FCFF', 'Free Cash Flow', 'Book Value', 'Economic Book Value', 'Tangible Book Value', 'Book Value Per Share', 'Adjusted Book Value', 'Replacement Cost', 'Liquidation Value', 'Going Concern Value', 'Breakup Value', 'Sum of Parts', 'Sum-of-the-Parts', 'Enterprise Value', 'Equity Value', 'Market Capitalization', 'Shareholders Equity', 'Total Assets', 'Total Liabilities', 'Net Worth', 'Intangible Assets', 'Goodwill', 'Brand Value', 'Patent Value', 'Franchise Value', 'Royalty Rate', 'License Fee', 'Technology Transfer', 'Equity Market', 'Bond Market', 'Capital Market', 'Debt Market', 'Money Market', 'Foreign Exchange Market', 'Derivatives Market', 'Commodities', 'Currency Pair', 'Exchange Rate', 'Interest Rate', 'Yield Curve', 'Term Structure', 'Risk-Free Rate', 'Credit Spread', 'Premium', 'Discount', 'Par Value', 'Face Value', 'Book Value', 'Market Value', 'Fair Value', 'Intrinsic Value', 'Investment Value', 'Appraisal Value', 'Liquidation Value', 'Replacement Value', 'Salvage Value', 'Residual Value', 'Terminal Value', 'Going Concern Value', 'Carrying Value', 'Historical Cost', 'Original Cost', 'Acquisition Cost', 'Cost Basis', 'Tax Basis', 'Depreciable Base', 'Accumulated Depreciation', 'Book Depreciation', 'Tax Depreciation', 'MACRS', 'Straight-Line', 'Declining Balance', 'Units-of-Production', 'Sum-of-Years-Digits', 'Section 179', 'Bonus Depreciation', 'Tax Credit', 'Tax Shield', 'Tax Benefit', 'Tax Payment', 'Tax Evasion', 'Tax Avoidance', 'Tax Planning', 'Tax Strategy', 'Tax Optimization', 'Tax Minimization', 'Tax Rate', 'Marginal Tax Rate', 'Average Tax Rate', 'Effective Tax Rate', 'Statutory Tax Rate', 'Effective Tax Rate'],
+    baseUnit: 'USD',
+    ratios: {USD: 1, EUR: 0.85, GBP: 0.73, JPY: 110, AUD: 1.35, CAD: 1.25, CHF: 0.92, CNY: 6.45, SEK: 8.65, NOK: 8.6, DKK: 6.25, PLN: 3.85, CZK: 21.5, HUF: 300, RUB: 74, INR: 74, BRL: 5.2, MXN: 20, ZAR: 15, KRW: 1200, SGD: 1.35, HKD: 7.8, NZD: 1.4, THB: 32, IDR: 14500, MYR: 4.15, PHP: 50, ARS: 95, CLP: 770, PEN: 4, UAH: 27, RON: 4.1, BGN: 1.65, HRK: 6.3, ISK: 12.4, EGY: 15.7, NGN: 410, KES: 110, GHS: 6, TND: 2.8, MAD: 8.9, DZD: 135, LYD: 4.5, SDD: 440, LBP: 1500, JOD: 0.71, SAR: 3.75, AED: 3.67, QAR: 3.64, OMR: 0.385, BHD: 0.377, KWD: 0.3, ILS: 3.2, 'Exchange Rate': 1, 'Stock Price': 1, 'Market Cap': 1, 'Revenue': 1, 'Profit': 1, 'EPS': 1, 'PE Ratio': 1, 'ROE': 1}
+  },
+  accounting: {
+    units: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'DKK', 'SEK', 'NOK', 'PLN', 'CZK', 'HUF', 'RUB', 'INR', 'BRL', 'MXN', 'ZAR', 'KRW', 'SGD', 'HKD', 'NZD', 'THB', 'IDR', 'MYR', 'PHP', 'ARS', 'CLP', 'PEN', 'UAH', 'RON', 'BGN', 'HRK', 'ISK', 'CNH', 'TRY', 'SAR', 'AED', 'QAR', 'KWD', 'BHD', 'OMR', 'JOD', 'ILS', 'Egyptian Pound', 'Nigerian Naira', 'Kenyan Shilling', 'South African Rand', 'Ghanaian Cedi', 'Tunisian Dinar', 'Moroccan Dirham', 'Algerian Dinar', 'Libyan Dinar', 'Sudanese Pound', 'Lebanese Pound', 'Brazilian Real', 'Norwegian Krone', 'Swedish Krona', 'Danish Krone', 'Pound', 'Euro', 'Franc', 'Yen', 'Dollar', 'Rupee', 'Yuan', 'Won', 'Baht', 'Ringgit', 'Rupiah', 'Peso', 'Real', 'Krone', 'Forint', 'Zloty', 'Leu', 'Dinar', 'Rial', 'Shekel', 'Bitcoin', 'Ethereum', 'Litecoin', 'Ripple', 'Cardano', 'Polkadot', 'Dogecoin', 'Stablecoin', 'Central Bank Digital Currency', 'CBDC', 'USD', 'EUR', 'GBP', 'JPY', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'RUB', 'INR', 'BRL', 'MXN', 'ZAR', 'KRW', 'SGD', 'HKD', 'NZD', 'THB', 'IDR', 'PHP', 'ARS', 'CLP', 'TRY', 'PEN', 'UAH', 'RON', 'BGN', 'HRK', 'ISK', 'USD', 'EUR', 'Exchange Rate', 'Stock Price', 'Share Price', 'Market Cap', 'Revenue', 'Profit', 'Net Income', 'Gross Margin', 'Net Margin', 'Operating Margin', 'EBITDA', 'EBIT', 'EPS', 'PE Ratio', 'Price to Book', 'ROE', 'ROA', 'ROI', 'ROIC', 'Debt to Equity', 'Current Ratio', 'Quick Ratio', 'Inventory Turnover', 'Asset Turnover', 'Revenue per Share', 'Cash Flow', 'Free Cash Flow', 'Operating Cash Flow', 'Investing Cash Flow', 'Financing Cash Flow', 'Book Value', 'Tangible Book Value', 'Total Assets', 'Total Liabilities', 'Shareholders Equity', 'Common Equity', 'Retained Earnings', 'Paid-in Capital', 'APIC', 'Goodwill', 'Intangible Assets', 'PP&E', 'Depreciation', 'Amortization', 'CAPEX', 'CapEx', 'OPEX', 'OpEx', 'SG&A', 'R&D', 'Marketing Costs', 'COGS', 'Cost of Goods Sold', 'Gross Profit', 'Operating Profit', 'Profit Margin', 'Net Margin', 'Return on Investment', 'Interest', 'Dividend', 'Dividend Yield', 'Dividend Payout Ratio', 'Market Cap', 'Enterprise Value', 'EV/EBITDA', 'PS Ratio', 'PB Ratio', 'PEG Ratio', 'Price to Earnings', 'Price to Sales', 'Price to Book', 'EV/Revenue', 'EV/EBITDA', 'Acid Test Ratio', 'Cash Ratio', 'Debt Ratio', 'Equity Ratio', 'Leverage Ratio', 'Coverage Ratio', 'Activity Ratio', 'Efficiency Ratio', 'Profitability Ratio', 'Valuation Ratio', 'Liquidity', 'Solvency', 'Efficiency', 'Profitability', 'Valuation', 'Metrics', 'KPIs', 'OKRs', 'SLA', 'SLO', 'SLI', 'ROI', 'ROIC', 'WACC', 'Beta', 'Alpha', 'Sharpe', 'Sortino', 'Tracking Error', 'Information Ratio', 'Maximum Drawdown', 'Volatility', 'Standard Deviation', 'VaR', 'CVaR', 'Expected Shortfall', 'Monte Carlo Simulation', 'Black-Scholes', 'Option Pricing', 'Implied Volatility', 'Historical Volatility', 'GARCH', 'ARIMA', 'Markowitz', 'CAPM', 'APT', 'Fama-French', 'Multi-Factor Model', 'Efficient Frontier', 'CAPM', 'Dividend Discount Model', 'DCF', 'Discounted Cash Flow', 'Free Cash Flow Yield', 'FCF Yield', 'EV/FCF', 'EV/EBIT', 'EV/EBITDA', 'PEG', 'EV/Sales', 'EV/Revenue', 'Price to Sales', 'Cost of Capital', 'Opportunity Cost', 'Time Value', 'Money', 'Future Value', 'Present Value', 'Annuity', 'Perpetuity', 'NPV', 'IRR', 'Payback Period', 'Profitability Index', 'Hurdle Rate', 'Cost of Goods Sold', 'Gross Margin', 'Operating Margin', 'Net Margin', 'Return on Assets', 'Return on Equity', 'Return on Capital Employed', 'DuPont Analysis', 'ROCE', 'ROIC', 'RONA', 'ROTA', 'ROE', 'ROI', 'EVA', 'Economic Value Added', 'MVA', 'Market Value Added', 'NOPAT', 'Net Operating Profit After Tax', 'FCFE', 'FCFF', 'Free Cash Flow', 'Book Value', 'Economic Book Value', 'Tangible Book Value', 'Book Value Per Share', 'Adjusted Book Value', 'Replacement Cost', 'Liquidation Value', 'Going Concern Value', 'Breakup Value', 'Sum of Parts', 'Sum-of-the-Parts', 'Enterprise Value', 'Equity Value', 'Market Capitalization', 'Shareholders Equity', 'Total Assets', 'Total Liabilities', 'Net Worth', 'Intangible Assets', 'Goodwill', 'Brand Value', 'Patent Value', 'Franchise Value', 'Royalty Rate', 'License Fee', 'Technology Transfer', 'Equity Market', 'Bond Market', 'Capital Market', 'Debt Market', 'Money Market', 'Foreign Exchange Market', 'Derivatives Market', 'Commodities', 'Currency Pair', 'Exchange Rate', 'Interest Rate', 'Yield Curve', 'Term Structure', 'Risk-Free Rate', 'Credit Spread', 'Premium', 'Discount', 'Par Value', 'Face Value', 'Book Value', 'Market Value', 'Fair Value', 'Intrinsic Value', 'Investment Value', 'Appraisal Value', 'Liquidation Value', 'Replacement Value', 'Salvage Value', 'Residual Value', 'Terminal Value', 'Going Concern Value', 'Carrying Value', 'Historical Cost', 'Original Cost', 'Acquisition Cost', 'Cost Basis', 'Tax Basis', 'Depreciable Base', 'Accumulated Depreciation', 'Book Depreciation', 'Tax Depreciation', 'MACRS', 'Straight-Line', 'Declining Balance', 'Units-of-Production', 'Sum-of-Years-Digits', 'Section 179', 'Bonus Depreciation', 'Tax Credit', 'Tax Shield', 'Tax Benefit', 'Tax Payment', 'Tax Evasion', 'Tax Avoidance', 'Tax Planning', 'Tax Strategy', 'Tax Optimization', 'Tax Minimization', 'Tax Rate', 'Marginal Tax Rate', 'Average Tax Rate', 'Effective Tax Rate', 'Statutory Tax Rate', 'Effective Tax Rate'],
+    baseUnit: 'USD',
+    ratios: {USD: 1, EUR: 0.85, GBP: 0.73, JPY: 110, AUD: 1.35, CAD: 1.25, CHF: 0.92, CNY: 6.45, SEK: 8.65, NOK: 8.6, DKK: 6.25, PLN: 3.85, CZK: 21.5, HUF: 300, RUB: 74, INR: 74, BRL: 5.2, MXN: 20, ZAR: 15, KRW: 1200, SGD: 1.35, HKD: 7.8, NZD: 1.4, THB: 32, IDR: 14500, MYR: 4.15, PHP: 50, ARS: 95, CLP: 770, PEN: 4, UAH: 27, RON: 4.1, BGN: 1.65, HRK: 6.3, ISK: 12.4, EGY: 15.7, NGN: 410, KES: 110, GHS: 6, TND: 2.8, MAD: 8.9, DZD: 135, LYD: 4.5, SDD: 440, LBP: 1500, JOD: 0.71, SAR: 3.75, AED: 3.67, QAR: 3.64, OMR: 0.385, BHD: 0.377, KWD: 0.3, ILS: 3.2, 'Exchange Rate': 1, 'Stock Price': 1, 'Market Cap': 1, 'Revenue': 1, 'Profit': 1, 'EPS': 1, 'PE Ratio': 1, 'ROE': 1}
+  },
+  medicine: {
+    units: ['mg', 'μg', 'g', 'kg', 'lb', 'oz', 'mL', 'L', 'mg/mL', 'μg/mL', 'mg/kg', 'μg/kg', 'BMI', 'kcal', 'mg/day', 'mg/dose', 'mg/tablet', 'mg/capsule', 'mg/5mL', 'mg/mL', 'μg/L', 'mg/L', 'g/dL', 'g/L', 'mIU/L', 'mIU/mL', 'IU/mL', 'U/mL', 'kU/L', 'mmol/L', 'mol/L', 'mmol/kg', 'mmol/kg/day', 'μmol/L', 'nmol/L', 'pmol/L', 'mEq/L', 'mEq', 'mOsmol/L', 'mOsm/kg', 'dL', 'mL/min', 'mL/hr', 'mL/kg/hr', 'L/min', 'drops/min', 'drops/mL', 'ppm', 'ppb', 'mg%', 'IU', 'USP unit', 'mg/day', 'mg BID', 'mg TID', 'mg QD', 'mg once daily', 'mg twice daily', 'mg three times daily', 'mg every 8 hours', 'mg every 12 hours', 'mg per day', 'μg/day', 'μg/d', 'mg/kg', 'mg/kg/day', 'μg/kg/day', 'mg/m²', 'mg/mL', 'μg/mL', 'IU/day', '%', 'mmHg', 'cmH₂O', 'psi', 'atm', 'kPa', '°C', '°F', 'K', 'beats per minute', 'bpm', 'respiratory rate', 'breaths per minute'],
+    baseUnit: 'mg',
+    ratios: {mg: 1, μg: 1000, g: 0.001, kg: 1e-6, lb: 2.2046e-6, oz: 3.5274e-5, mL: 1, L: 0.001, 'mg/mL': 1, 'μg/mL': 1000, 'mg/kg': 1, 'μg/kg': 1000, BMI: 1, kcal: 1, 'mg/day': 1, 'mg/dose': 1, 'mg/tablet': 1, 'mg/capsule': 1, 'mg/5mL': 1, 'μg/L': 1000, 'mg/L': 1, 'g/dL': 0.01, 'g/L': 0.001, 'mIU/L': 1, 'mIU/mL': 1, 'IU/mL': 1, 'U/mL': 1, 'kU/L': 0.001, 'mmol/L': 1000, 'mol/L': 1, 'mmol/kg': 1, 'mmol/kg/day': 1, 'μmol/L': 1000000, 'nmol/L': 1e+9, 'pmol/L': 1e+12, 'mEq/L': 1, mEq: 1, 'mOsmol/L': 1, 'mOsm/kg': 1, dL: 10, 'mL/min': 1, 'mL/hr': 1, 'mL/kg/hr': 1, 'L/min': 0.001, 'drops/min': 1, 'drops/mL': 20, ppm: 1000, ppb: 1e+6, 'mg%': 1, IU: 1, 'USP unit': 1, 'mg BID': 1, 'mg TID': 1, 'mg QD': 1, 'mg once daily': 1, 'mg twice daily': 1, 'mg three times daily': 1, 'mg every 8 hours': 1, 'mg every 12 hours': 1, 'mg per day': 1, 'μg/day': 1000, 'μg/d': 1000, 'mg/kg': 1, 'mg/kg/day': 1, 'μg/kg/day': 1000, 'mg/m²': 1, 'IU/day': 1, '%': 100, mmHg: 1, 'cmH₂O': 1, psi: 1, atm: 1, kPa: 1, '°C': 1, '°F': 1, K: 1, 'beats per minute': 1, bpm: 1, 'respiratory rate': 1, 'breaths per minute': 1}
+  },
+  geography: {
+    units: ['Meter', 'Kilometer', 'Centimeter', 'Millimeter', 'Micrometer', 'Nanometer', 'Foot', 'Inch', 'Yard', 'Mile', 'Nautical mile', 'Fathom', 'Furlong', 'Rod', 'Chain', 'Link', 'Rope', 'Cable', 'Hand', 'Span', 'Ell', 'Barleycorn', 'Digit', 'Furlong', 'League', 'Geographical mile', 'Statute mile', 'Light year', 'Astronomical unit', 'Parsec', 'Kiloparsec', 'Megaparsec', 'Gigaparsec', 'Hectometer', 'Decameter', 'Decimeter', 'Hectometer', 'Square meter', 'Square kilometer', 'Square centimeter', 'Square millimeter', 'Acre', 'Hectare', 'Square foot', 'Square inch', 'Square yard', 'Square mile', 'Section', 'Township', 'Are', 'Cent', 'Rood', 'Square chain', 'Square link', 'Square rod', 'Cubic meter', 'Cubic kilometer', 'Cubic foot', 'Cubic inch', 'Cubic yard', 'Acre-foot', 'Board foot', 'Cord', 'Cubic mile', 'US gallon', 'Imperial gallon', 'Liter', 'Milliliter', 'Fluid ounce', 'Pint', 'Quart', 'Peck', 'Bushel', 'Degree Celsius', 'Kelvin', 'Degree Fahrenheit', 'Rankine', 'Degree Delisle', 'Degree Newton', 'Degree Réaumur', 'Degree Rømer', 'Meter per second', 'Kilometer per hour', 'Mile per hour', 'Foot per second', 'Knot', 'Mach', 'Speed of light', 'Speed of sound', 'Latitude', 'Longitude', 'Altitude', 'Elevation', 'Height', 'Depth', 'Thickness', 'Distance', 'Displacement'],
+    baseUnit: 'Meter',
+    ratios: {Meter: 1, Kilometer: 0.001, Centimeter: 100, Millimeter: 1000, Micrometer: 1000000, Nanometer: 1e+9, Foot: 3.28084, Inch: 39.3701, Yard: 1.09361, Mile: 0.000621371, 'Nautical mile': 0.000539957, Fathom: 0.546807, Furlong: 0.00497097, Rod: 0.198838, Chain: 0.0497097, Link: 4.97097, League: 0.000207123, 'Geographical mile': 0.000539613, 'Astronomical unit': 6.68459e-12, Lightyear: 1.057e-16, Parsec: 3.24078e-17, Kiloparsec: 3.24078e-20, 'Square meter': 1, 'Square kilometer': 0.000001, 'Square centimeter': 10000, 'Square foot': 10.7639, 'Square inch': 1550, 'Square yard': 1.19599, 'Square mile': 3.86102e-7, Hectare: 0.0001, Are: 0.01, Cent: 10000, Section: 3.86102e-7}
+  },
+  architecture: {
+    units: ['Meter', 'Centimeter', 'Millimeter', 'Foot', 'Inch', 'Yard', 'Square meter', 'Square foot', 'Square inch', 'Square yard', 'Cubic meter', 'Cubic foot', 'Cubic inch', 'Liter', 'US gallon', 'Imperial gallon', 'Board foot', 'Cord', 'Cubic yard', 'Hectare', 'Acre', 'Section', 'Township', 'Rood', 'Are', 'Cent', 'Kilometer per hour', 'Miles per hour', 'Foot per second', 'Metre per second', 'Knot', 'Degree Celsius', 'Kelvin', 'Degree Fahrenheit', 'Joule', 'Calorie', 'BTU', 'Newton', 'Pound-force', 'Kilogram-force', 'Gram-force', 'Dyne', 'Pascal', 'Pound per square inch', 'Bar', 'Atmosphere', 'Torr', 'Millimeter of mercury', 'Poise', 'Pascal-second', 'Kilogram per meter', 'Gram per centimeter', 'Pound per cubic foot', 'Ton', 'Kilogram', 'Pound', 'Ounce', 'Gram', 'Slug', 'Carat', 'Grain', 'Scruple', 'Dram', 'Apothecary dram', 'Troy ounce', 'Troy pound', 'Pennyweight', 'Mite', 'Minute', 'Hour', 'Second', 'Day', 'Week', 'Month', 'Year', 'Decade', 'Century', 'Millennium', 'Lumen', 'Lux', 'Candela', 'Foot-candle', 'Kelvin', 'Celsius', 'Fahrenheit', 'Rankine', 'Delisle', 'Réaumur'],
+    baseUnit: 'Meter',
+    ratios: {Meter: 1, Centimeter: 100, Millimeter: 1000, Foot: 3.28084, Inch: 39.3701, Yard: 1.09361, 'Square meter': 1, 'Square foot': 10.7639, 'Square inch': 1550, 'Square yard': 1.19599, 'Cubic meter': 1, 'Cubic foot': 35.3147, 'Cubic inch': 61023.7, Liter: 1000, 'US gallon': 264.172, 'Imperial gallon': 219.969, 'Board foot': 423.776, Cord: 0.275899}
+  }
+};
+
+let currentType = 'force';
+
+const fromValue = document.getElementById('fromValue');
+const toValue = document.getElementById('toValue');
+const fromUnit = document.getElementById('fromUnit');
+const toUnit = document.getElementById('toUnit');
+const result = document.getElementById('result');
+const refreshRates = document.getElementById('refreshRates');
+
+async function fetchExchangeRates() {
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        conversions.currency.ratios = {
+            'USD': 1,
+            ...data.rates
+        };
+        refreshRates.textContent = `Exchange rates last updated: ${new Date().toLocaleString()}`;
+        // Trigger a conversion update if values are present
+        if (fromValue.value) {
+            convert();
+        }
+    } catch (error) {
+        console.error('Error fetching exchange rates:', error);
+        refreshRates.textContent = 'Error loading exchange rates. Please try again later.';
+    }
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentType = tab.dataset.type;
+    if (currentType === 'currency') {
+      refreshRates.style.display = 'block';
+      fetchExchangeRates();
+    } else {
+      refreshRates.style.display = 'none';
+    }
+    populateUnits();
+    convert();
+  });
+});
+
+[fromValue, fromUnit, toUnit].forEach(element => {
+  element.addEventListener('change', convert);
+});
+
+function populateUnits() {
+  const units = conversions[currentType].units;
+  fromUnit.innerHTML = '';
+  toUnit.innerHTML = '';
+  
+  units.forEach(unit => {
+    fromUnit.add(new Option(unit, unit));
+    toUnit.add(new Option(unit, unit));
+  });
+}
+
+function convert() {
+  if (!fromValue.value) {
+    toValue.value = '';
+    result.textContent = 'Enter a value to see the conversion';
+    return;
+  }
+
+  const value = parseFloat(fromValue.value);
+  const from = fromUnit.value;
+  const to = toUnit.value;
+  const baseUnit = conversions[currentType].baseUnit;
+  const ratios = conversions[currentType].ratios;
+  
+  if (currentType === 'currency' && !ratios[from]) {
+    result.textContent = 'Loading exchange rates...';
+    return;
+  }
+
+  if (currentType === 'temperature') {
+    const converted = convertTemperature(value, from, to);
+    toValue.value = converted.toFixed(6);
+    result.textContent = `${value} ${from} = ${converted.toFixed(6)} ${to}`;
+  } else {
+    // Convert to base unit first
+    const inBaseUnit = from === baseUnit ? value : value / ratios[from];
+    // Convert from base unit to target unit
+    const converted = to === baseUnit ? inBaseUnit : inBaseUnit * ratios[to];
+
+    toValue.value = converted.toFixed(6);
+    result.textContent = `${value} ${from} = ${converted.toFixed(6)} ${to}`;
+  }
+}
+
+function convertTemperature(value, from, to) {
+  const baseValue = convertToKelvin(value, from);
+  return convertFromKelvin(baseValue, to);
+}
+
+function convertToKelvin(value, unit) {
+  switch(unit) {
+    case 'Kelvin (K)':
+      return parseFloat(value);
+    case 'Celsius (°C)':
+      return parseFloat(value) + 273.15;
+    case 'Fahrenheit (°F)':
+      return (parseFloat(value) - 32) * 5/9 + 273.15;
+    case 'Rankine (°R)':
+      return parseFloat(value) * 5/9;
+    case 'Delisle (°De)':
+      return 373.15 - parseFloat(value) * 2/3;
+    case 'Newton (°N)':
+      return parseFloat(value) * 100/33 + 273.15;
+    case 'Réaumur (°Re)':
+      return parseFloat(value) * 5/4 + 273.15;
+    case 'Rømer (°Rø)':
+      return (parseFloat(value) - 7.5) * 40/21 + 273.15;
+    default:
+      return parseFloat(value);
+  }
+}
+
+function convertFromKelvin(value, unit) {
+  const kelvin = parseFloat(value);
+  switch(unit) {
+    case 'Kelvin (K)':
+      return kelvin;
+    case 'Celsius (°C)':
+      return kelvin - 273.15;
+    case 'Fahrenheit (°F)':
+      return (kelvin - 273.15) * 9/5 + 32;
+    case 'Rankine (°R)':
+      return kelvin * 9/5;
+    case 'Delisle (°De)':
+      return (373.15 - kelvin) * 3/2;
+    case 'Newton (°N)':
+      return (kelvin - 273.15) * 33/100;
+    case 'Réaumur (°Re)':
+      return (kelvin - 273.15) * 4/5;
+    case 'Rømer (°Rø)':
+      return (kelvin - 273.15) * 21/40 + 7.5;
+    default:
+      return kelvin;
+  }
+}
+
+populateUnits();
+refreshRates.style.display = 'none';
+</script>
+</body></html>
